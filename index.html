@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>음악 및 영화 목록</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column; /* 시계를 밑으로 내리기 위해 column 방향으로 설정 */
+            align-items: center;
+            justify-content: center; /* 세로 중앙 정렬을 위해 추가 */
+            height: 100vh;
+            background: url('image5.jpg'); /* 배경화면 이미지 경로를 적절하게 변경하세요 */
+            background-size: cover;
+            background-position: center;
+        }
+
+        .list-container {
+            width: 80%;
+            max-width: 600px;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .music-list {
+            background-color: rgba(255, 255, 255, 0.8); /* 음악 목록 배경색 */
+        }
+
+        .movie-list {
+            background-color: rgba(200, 200, 255, 0.8); /* 영화 목록 배경색 */
+        }
+
+        h2 {
+            text-align: center;
+            color: #333;
+        }
+
+        input {
+            width: calc(100% - 20px);
+            padding: 10px;
+            margin: 5px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+
+        .item-list {
+            list-style: none;
+            padding: 0;
+            margin-top: 20px;
+        }
+
+        .list-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #ddd;
+            padding: 10px 0px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            position: relative;
+        }
+
+        .list-item:hover {
+            background-color: #f9f9f9;
+        }
+
+        .delete-btn {
+            background-color: #e74c3c;
+            color: #fff;
+            border: none;
+            padding: 5px; /* 수정된 부분: 삭제 버튼의 padding을 5px로 조정 */
+            cursor: pointer;
+            border-radius: 4px;
+        }
+
+        .delete-icon {
+            position: absolute;
+            right: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 18px;
+            color: #e74c3c;
+            opacity: 0; /* 초기에는 투명하게 설정 */
+            transition: opacity 0.3s;
+        }
+
+        .list-item:hover .delete-icon {
+            opacity: 1; /* 호버 시에만 나타나도록 설정 */
+        }
+
+        #clock {
+            font-size: 24px;
+            margin-top: 20px;
+            text-align: center;
+            color: #555;
+            position: absolute;
+            bottom: 10px; /* 시계를 아래로 내리는 위치 조정 */
+            right: 20px; /* 시계를 오른쪽으로 이동하는 위치 조정 */
+        }
+    </style>
+</head>
+<body>
+    <div class="list-container music-list" id="musicContainer">
+        <h2>음악 목록</h2>
+        <input type="text" id="musicTitleInput" placeholder="음악 제목 입력">
+        <input type="text" id="youtubeLinkInput" placeholder="YouTube 링크 입력">
+        <button style="background-color: #3498db;" onclick="addMusic()">음악 추가</button>
+        <ul id="musicList" class="item-list"></ul>
+        <button class="switch-button" onclick="switchList('movie')">영화 목록 보기</button>
+    </div>
+
+    <div class="list-container movie-list" id="movieContainer" style="display: none;">
+        <h2>영화 목록</h2>
+        <input type="text" id="movieTitleInput" placeholder="영화 제목 입력">
+        <input type="text" id="imdbLinkInput" placeholder="IMDb 링크 입력">
+        <button style="background-color: #8e44ad;" onclick="addMovie()">영화 추가</button>
+        <ul id="movieList" class="item-list"></ul>
+        <button class="switch-button" onclick="switchList('music')">음악 목록 보기</button>
+    </div>
+
+    <div id="clock"></div>
+
+    <script>
+        function addMusic() {
+            var musicTitleInput = document.getElementById("musicTitleInput");
+            var youtubeLinkInput = document.getElementById("youtubeLinkInput");
+            var musicList = document.getElementById("musicList");
+
+            if (musicTitleInput.value.trim() === "" || youtubeLinkInput.value.trim() === "") {
+                alert("음악 제목과 YouTube 링크를 모두 입력하세요.");
+                return;
+            }
+
+            var li = document.createElement("li");
+            li.className = "list-item";
+            li.innerHTML = `
+                <span onclick="playMedia('${youtubeLinkInput.value}')">${musicTitleInput.value}</span>
+                <span class="delete-icon" onclick="deleteItem(this)">X</span>
+            `;
+
+            musicList.appendChild(li);
+            musicTitleInput.value = "";
+            youtubeLinkInput.value = "";
+        }
+
+        function addMovie() {
+            var movieTitleInput = document.getElementById("movieTitleInput");
+            var imdbLinkInput = document.getElementById("imdbLinkInput");
+            var movieList = document.getElementById("movieList");
+
+            if (movieTitleInput.value.trim() === "" || imdbLinkInput.value.trim() === "") {
+                alert("영화 제목과 IMDb 링크를 모두 입력하세요.");
+                return;
+            }
+
+            var li = document.createElement("li");
+            li.className = "list-item";
+            li.innerHTML = `
+                <span onclick="playMedia('${imdbLinkInput.value}')">${movieTitleInput.value}</span>
+                <span class="delete-icon" onclick="deleteItem(this)">X</span>
+            `;
+
+            movieList.appendChild(li);
+            movieTitleInput.value = "";
+            imdbLinkInput.value = "";
+        }
+
+        function deleteItem(icon) {
+            var listItem = icon.parentElement;
+            listItem.remove();
+        }
+
+        function playMedia(link) {
+            window.open(link, "_blank");
+        }
+
+        function switchList(listType) {
+            if (listType === 'movie') {
+                document.getElementById('musicContainer').style.display = 'none';
+                document.getElementById('movieContainer').style.display = 'block';
+            } else {
+                document.getElementById('musicContainer').style.display = 'block';
+                document.getElementById('movieContainer').style.display = 'none';
+            }
+        }
+
+        function updateClock() {
+            var clockElement = document.getElementById("clock");
+            var currentTime = new Date();
+            var hours = currentTime.getHours();
+            var minutes = currentTime.getMinutes();
+            var seconds = currentTime.getSeconds();
+
+            hours = (hours < 10) ? "0" + hours : hours;
+            minutes = (minutes < 10) ? "0" + minutes : minutes;
+            seconds = (seconds < 10) ? "0" + seconds : seconds;
+
+            clockElement.innerHTML = hours + ":" + minutes + ":" + seconds;
+
+            setTimeout(updateClock, 1000);
+        }
+
+        updateClock();
+    </script>
+</body>
+</html>
