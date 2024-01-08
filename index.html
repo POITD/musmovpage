@@ -139,24 +139,48 @@
     <div id="clock"></div>
 
     <script>
+        function loadLists() {
+            var musicList = JSON.parse(localStorage.getItem('musicList')) || [];
+            var movieList = JSON.parse(localStorage.getItem('movieList')) || [];
+
+            renderList('music', musicList);
+            renderList('movie', movieList);
+        }
+
+        function saveLists(listType, list) {
+            localStorage.setItem(listType + 'List', JSON.stringify(list));
+        }
+
+        function renderList(listType, list) {
+            var container = document.getElementById(listType + 'List');
+            container.innerHTML = '';
+
+            list.forEach(function (item) {
+                var li = document.createElement("li");
+                li.className = "list-item";
+                li.innerHTML = `
+                    <span onclick="playMedia('${item.link}')">${item.title}</span>
+                    <span class="delete-icon" onclick="deleteItem(this, '${listType}')">X</span>
+                `;
+
+                container.appendChild(li);
+            });
+        }
+
         function addMusic() {
             var musicTitleInput = document.getElementById("musicTitleInput");
             var youtubeLinkInput = document.getElementById("youtubeLinkInput");
-            var musicList = document.getElementById("musicList");
+            var musicList = JSON.parse(localStorage.getItem('musicList')) || [];
 
             if (musicTitleInput.value.trim() === "" || youtubeLinkInput.value.trim() === "") {
                 alert("음악 제목과 YouTube 링크를 모두 입력하세요.");
                 return;
             }
 
-            var li = document.createElement("li");
-            li.className = "list-item";
-            li.innerHTML = `
-                <span onclick="playMedia('${youtubeLinkInput.value}')">${musicTitleInput.value}</span>
-                <span class="delete-icon" onclick="deleteItem(this)">X</span>
-            `;
+            musicList.push({ title: musicTitleInput.value, link: youtubeLinkInput.value });
+            saveLists('music', musicList);
+            renderList('music', musicList);
 
-            musicList.appendChild(li);
             musicTitleInput.value = "";
             youtubeLinkInput.value = "";
         }
@@ -164,28 +188,28 @@
         function addMovie() {
             var movieTitleInput = document.getElementById("movieTitleInput");
             var imdbLinkInput = document.getElementById("imdbLinkInput");
-            var movieList = document.getElementById("movieList");
+            var movieList = JSON.parse(localStorage.getItem('movieList')) || [];
 
             if (movieTitleInput.value.trim() === "" || imdbLinkInput.value.trim() === "") {
                 alert("영화 제목과 IMDb 링크를 모두 입력하세요.");
                 return;
             }
 
-            var li = document.createElement("li");
-            li.className = "list-item";
-            li.innerHTML = `
-                <span onclick="playMedia('${imdbLinkInput.value}')">${movieTitleInput.value}</span>
-                <span class="delete-icon" onclick="deleteItem(this)">X</span>
-            `;
+            movieList.push({ title: movieTitleInput.value, link: imdbLinkInput.value });
+            saveLists('movie', movieList);
+            renderList('movie', movieList);
 
-            movieList.appendChild(li);
             movieTitleInput.value = "";
             imdbLinkInput.value = "";
         }
 
-        function deleteItem(icon) {
+        function deleteItem(icon, listType) {
             var listItem = icon.parentElement;
-            listItem.remove();
+            var index = Array.from(listItem.parentElement.children).indexOf(listItem);
+            var list = JSON.parse(localStorage.getItem(listType + 'List')) || [];
+            list.splice(index, 1);
+            saveLists(listType, list);
+            renderList(listType, list);
         }
 
         function playMedia(link) {
@@ -218,6 +242,10 @@
             setTimeout(updateClock, 1000);
         }
 
+        // 페이지 로드 시 음악과 영화 목록 불러오기
+        loadLists();
+
+        // 시계 업데이트 및 초기 데이터 로딩
         updateClock();
     </script>
 </body>
